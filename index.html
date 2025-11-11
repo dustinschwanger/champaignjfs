@@ -30,10 +30,6 @@
   <!-- Skip Navigation Link for Accessibility -->
   <a href="#main-content" class="usa-skipnav">Skip to main content</a>
 
-  <!-- Facebook SDK -->
-  <div id="fb-root"></div>
-  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0" nonce="YOUR_NONCE"></script>
-
   <!-- Header -->
   <header class="site-header">
     <div class="grid-container">
@@ -81,35 +77,35 @@
               <a class="usa-button usa-button--big" href="#apply">Apply for Benefits</a>
               <a class="usa-button usa-button--outline usa-button--inverse usa-button--big" href="tel:937-484-1500">
                 <i class="fas fa-phone" aria-hidden="true"></i>
-                Call (937) 484-1500
+                <span>Call (937) 484-1500</span>
               </a>
             </div>
           </div>
 
           <!-- Chat Widget UI -->
-          <div class="chat-widget" id="chatWidget">
+          <div class="chat-widget" id="chatWidget" role="region" aria-label="Chat support">
             <div class="chat-widget__header">
               <div class="chat-widget__header-content">
-                <i class="fas fa-comments chat-widget__header-icon"></i>
+                <i class="fas fa-comments chat-widget__header-icon" aria-hidden="true"></i>
                 <div class="chat-widget__header-text">
                   <h2 class="chat-widget__title">Ask Us Anything</h2>
                   <p class="chat-widget__subtitle">Get instant help</p>
                 </div>
               </div>
               <div class="chat-widget__header-actions">
-                <div class="chat-widget__status">
-                  <span class="chat-widget__status-dot"></span>
+                <div class="chat-widget__status" role="status" aria-label="Chat status online">
+                  <span class="chat-widget__status-dot" aria-hidden="true"></span>
                   <span class="chat-widget__status-text">Online</span>
                 </div>
                 <button class="chat-widget__close-button" id="closeChatButton" aria-label="Close chat">
-                  <i class="fas fa-times"></i>
+                  <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
 
-            <div class="chat-widget__messages">
+            <div class="chat-widget__messages" role="log" aria-live="polite" aria-label="Chat messages">
               <div class="chat-message chat-message--bot">
-                <div class="chat-message__avatar">
+                <div class="chat-message__avatar" aria-hidden="true">
                   <i class="fas fa-user-tie"></i>
                 </div>
                 <div class="chat-message__content">
@@ -130,7 +126,7 @@
               </div>
 
               <div class="chat-message chat-message--bot">
-                <div class="chat-message__avatar">
+                <div class="chat-message__avatar" aria-hidden="true">
                   <i class="fas fa-user-tie"></i>
                 </div>
                 <div class="chat-message__content">
@@ -141,20 +137,20 @@
                 </div>
               </div>
 
-              <div class="chat-widget__typing">
+              <div class="chat-widget__typing" role="status" aria-live="polite" aria-label="Agent is typing">
                 <div class="chat-typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                  <span aria-hidden="true"></span>
+                  <span aria-hidden="true"></span>
+                  <span aria-hidden="true"></span>
                 </div>
               </div>
             </div>
 
-            <div class="chat-widget__input">
+            <div class="chat-widget__input" role="form">
               <label for="chat-input-field" class="sr-only">Type your message</label>
-              <input type="text" id="chat-input-field" class="chat-widget__input-field" placeholder="Type your question..." aria-label="Chat message input">
-              <button class="chat-widget__send-button" aria-label="Send message">
-                <i class="fas fa-paper-plane"></i>
+              <input type="text" id="chat-input-field" class="chat-widget__input-field" placeholder="Type your question..." aria-label="Chat message input" autocomplete="off">
+              <button class="chat-widget__send-button" type="button" aria-label="Send message">
+                <i class="fas fa-paper-plane" aria-hidden="true"></i>
               </button>
             </div>
           </div>
@@ -162,9 +158,9 @@
       </div>
 
       <!-- Mobile Chat Bubble -->
-      <button class="chat-bubble-mobile" id="openChatButton" aria-label="Open chat">
-        <i class="fas fa-comments"></i>
-        <span class="chat-bubble-mobile__badge">1</span>
+      <button class="chat-bubble-mobile" id="openChatButton" aria-label="Open chat support">
+        <i class="fas fa-comments" aria-hidden="true"></i>
+        <span class="chat-bubble-mobile__badge" aria-label="1 unread message">1</span>
       </button>
     </section>
 
@@ -174,9 +170,40 @@
         const chatWidget = document.getElementById('chatWidget');
         const openChatButton = document.getElementById('openChatButton');
         const closeChatButton = document.getElementById('closeChatButton');
+        const chatInput = document.getElementById('chat-input-field');
+        const chatSendButton = document.querySelector('.chat-widget__send-button');
 
         function isMobile() {
           return window.innerWidth <= 640;
+        }
+
+        // Get all focusable elements in the chat widget
+        function getFocusableElements() {
+          return chatWidget.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+        }
+
+        // Focus trap for chat widget
+        function trapFocus(e) {
+          if (!chatWidget.classList.contains('chat-widget--mobile-open') &&
+              !chatWidget.classList.contains('chat-widget--desktop-open')) {
+            return;
+          }
+
+          const focusableElements = getFocusableElements();
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
         }
 
         // Open chat when clicking bubble
@@ -189,20 +216,45 @@
               chatWidget.classList.add('chat-widget--desktop-open');
             }
             openChatButton.style.display = 'none';
+
+            // Focus the input field when chat opens
+            setTimeout(function() {
+              if (chatInput) {
+                chatInput.focus();
+              }
+            }, 100);
+
+            // Add focus trap
+            document.addEventListener('keydown', trapFocus);
           });
+        }
+
+        // Close chat function
+        function closeChat() {
+          chatWidget.classList.remove('chat-widget--mobile-open');
+          chatWidget.classList.remove('chat-widget--desktop-open');
+          if (openChatButton) {
+            openChatButton.style.display = 'flex';
+            openChatButton.focus();
+          }
+          document.body.style.overflow = ''; // Restore body scroll
+          document.removeEventListener('keydown', trapFocus);
         }
 
         // Close chat when clicking close button
         if (closeChatButton) {
-          closeChatButton.addEventListener('click', function() {
-            chatWidget.classList.remove('chat-widget--mobile-open');
-            chatWidget.classList.remove('chat-widget--desktop-open');
-            if (openChatButton) {
-              openChatButton.style.display = 'flex';
-            }
-            document.body.style.overflow = ''; // Restore body scroll
-          });
+          closeChatButton.addEventListener('click', closeChat);
         }
+
+        // Close chat with ESC key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            if (chatWidget.classList.contains('chat-widget--mobile-open') ||
+                chatWidget.classList.contains('chat-widget--desktop-open')) {
+              closeChat();
+            }
+          }
+        });
 
         // Handle window resize - reset chat state
         let resizeTimer;
@@ -214,12 +266,7 @@
             const wasDesktopOpen = chatWidget.classList.contains('chat-widget--desktop-open');
 
             if (wasMobileOpen || wasDesktopOpen) {
-              chatWidget.classList.remove('chat-widget--mobile-open');
-              chatWidget.classList.remove('chat-widget--desktop-open');
-              if (openChatButton) {
-                openChatButton.style.display = 'flex';
-              }
-              document.body.style.overflow = '';
+              closeChat();
             }
           }, 250);
         });
@@ -416,11 +463,7 @@
             <div class="support-card__content">
               <h3 class="support-card__title">Child Support Enforcement</h3>
               <p class="support-card__description">
-<<<<<<< HEAD
-                All child support for Ohio's children goes through a CSEA. Auglaize County CSEA can accept cash, check, money orders, and credit card payments.
-=======
                 All child support for Ohio's children goes through a CSEA. Champaign County CSEA can accept cash, check, and money orders at our office, or credit card payments online.
->>>>>>> ff4113d (Update Champaign JFS site to match Belmont design changes)
               </p>
               <a href="/child-support" class="support-card__cta" aria-label="Learn more about Child Support Enforcement">Learn more</a>
             </div>
@@ -433,11 +476,7 @@
             <div class="support-card__content">
               <h3 class="support-card__title">Child Protective Services</h3>
               <p class="support-card__description">
-<<<<<<< HEAD
-                Protecting our children is important. If you suspect that a child living in Auglaize County is being abused or neglected, call immediately.
-=======
                 Protecting our children is important. If you suspect that a child living in Champaign County is being abused or neglected, call (937) 484-1500 immediately.
->>>>>>> ff4113d (Update Champaign JFS site to match Belmont design changes)
               </p>
               <a href="/child-protective-services" class="support-card__cta" aria-label="Learn more about Child Protective Services">Learn more</a>
             </div>
@@ -463,11 +502,7 @@
             <div class="support-card__content">
               <h3 class="support-card__title">Workforce Development</h3>
               <p class="support-card__description">
-<<<<<<< HEAD
-                OhioMeansJobs - Auglaize County is a resource for veterans, job seekers and employers. Get resume help, training and financial support.
-=======
                 OhioMeansJobs - Champaign County is a resource for veterans, job seekers and employers. Get resume help, training and financial support.
->>>>>>> ff4113d (Update Champaign JFS site to match Belmont design changes)
               </p>
               <a href="/workforce" class="support-card__cta" aria-label="Learn more about Workforce Development">Learn more</a>
             </div>
@@ -480,15 +515,9 @@
             <div class="support-card__content">
               <h3 class="support-card__title">Job Postings</h3>
               <p class="support-card__description">
-<<<<<<< HEAD
-                Current job openings at Auglaize County DJFS. Information on how to apply and Auglaize County's Drug Free Workplace Policy.
-              </p>
-              <a href="/jobs" class="support-card__cta" aria-label="View job openings at Auglaize County DJFS">View Openings</a>
-=======
                 Current job openings at Champaign County DJFS. Information on how to apply and our employment opportunities.
               </p>
               <a href="/jobs" class="support-card__cta" aria-label="View job openings at Champaign County DJFS">View Openings</a>
->>>>>>> ff4113d (Update Champaign JFS site to match Belmont design changes)
             </div>
           </article>
         </div>
@@ -496,11 +525,11 @@
     </section>
 
     <!-- Services Overview Callout -->
-    <section class="services-callout">
+    <section class="services-callout" aria-label="Our mission">
       <div class="grid-container">
         <div class="services-callout__content">
-          <div class="services-callout__icon">
-            <i class="fas fa-hands-helping" aria-hidden="true"></i>
+          <div class="services-callout__icon" aria-hidden="true">
+            <i class="fas fa-hands-helping"></i>
           </div>
           <p class="services-callout__text">
             We assist and enable children, adults, and families to become physically and emotionally safe, economically stable, healthy and educated. We are committed to treating individuals with dignity regardless of circumstances, maintaining confidentiality, and ensuring timely, accurate case processing.
@@ -518,8 +547,8 @@
             <h2 class="section-heading">Latest Updates</h2>
 
             <article class="news-article">
-              <div class="news-article__image">
-                <i class="fas fa-file-alt" aria-hidden="true"></i>
+              <div class="news-article__image" aria-hidden="true">
+                <i class="fas fa-file-alt"></i>
               </div>
               <div class="news-article__content">
                 <h4 class="news-article__title">
@@ -530,8 +559,8 @@
             </article>
 
             <article class="news-article">
-              <div class="news-article__image">
-                <i class="fas fa-file-alt" aria-hidden="true"></i>
+              <div class="news-article__image" aria-hidden="true">
+                <i class="fas fa-file-alt"></i>
               </div>
               <div class="news-article__content">
                 <h4 class="news-article__title">
@@ -542,8 +571,8 @@
             </article>
 
             <article class="news-article">
-              <div class="news-article__image">
-                <i class="fas fa-file-alt" aria-hidden="true"></i>
+              <div class="news-article__image" aria-hidden="true">
+                <i class="fas fa-file-alt"></i>
               </div>
               <div class="news-article__content">
                 <h4 class="news-article__title">
@@ -562,8 +591,8 @@
             <div class="contact-cards-grid">
               <!-- Hours Card -->
               <div class="contact-card">
-                <div class="contact-card__icon">
-                  <i class="far fa-clock" aria-hidden="true"></i>
+                <div class="contact-card__icon" aria-hidden="true">
+                  <i class="far fa-clock"></i>
                 </div>
                 <div class="contact-card__content">
                   <h3 class="contact-card__title">Office Hours</h3>
@@ -575,8 +604,8 @@
 
               <!-- Address Card -->
               <div class="contact-card">
-                <div class="contact-card__icon">
-                  <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                <div class="contact-card__icon" aria-hidden="true">
+                  <i class="fas fa-map-marker-alt"></i>
                 </div>
                 <div class="contact-card__content">
                   <h3 class="contact-card__title">Address</h3>
@@ -589,8 +618,8 @@
 
               <!-- Phone Card -->
               <div class="contact-card">
-                <div class="contact-card__icon">
-                  <i class="fas fa-phone" aria-hidden="true"></i>
+                <div class="contact-card__icon" aria-hidden="true">
+                  <i class="fas fa-phone"></i>
                 </div>
                 <div class="contact-card__content">
                   <h3 class="contact-card__title">Phone</h3>
@@ -603,8 +632,8 @@
 
               <!-- Email Card -->
               <div class="contact-card">
-                <div class="contact-card__icon">
-                  <i class="fas fa-envelope" aria-hidden="true"></i>
+                <div class="contact-card__icon" aria-hidden="true">
+                  <i class="fas fa-envelope"></i>
                 </div>
                 <div class="contact-card__content">
                   <h3 class="contact-card__title">Email</h3>
@@ -628,17 +657,17 @@
         <div class="site-footer__grid">
           <div class="site-footer__brand">
             <p>We provide Champaign County residents with supportive services for public assistance, child and adult protection, and workforce development.</p>
-            <div class="site-footer__social" aria-label="Follow Champaign County DJFS">
-              <a href="https://www.facebook.com/" class="site-footer__social-link" aria-label="Facebook">
+            <nav class="site-footer__social" aria-label="Social media links">
+              <a href="https://www.facebook.com/" class="site-footer__social-link" aria-label="Visit us on Facebook">
                 <i class="fab fa-facebook-f" aria-hidden="true"></i>
               </a>
-              <a href="https://www.linkedin.com/" class="site-footer__social-link" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/" class="site-footer__social-link" aria-label="Visit us on LinkedIn">
                 <i class="fab fa-linkedin-in" aria-hidden="true"></i>
               </a>
-              <a href="https://www.youtube.com/" class="site-footer__social-link" aria-label="YouTube">
+              <a href="https://www.youtube.com/" class="site-footer__social-link" aria-label="Visit us on YouTube">
                 <i class="fab fa-youtube" aria-hidden="true"></i>
               </a>
-            </div>
+            </nav>
           </div>
 
           <nav class="site-footer__column" aria-label="About DJFS">
@@ -660,7 +689,7 @@
             </ul>
           </nav>
 
-          <div class="site-footer__column" aria-label="Contact details">
+          <address class="site-footer__column" aria-label="Contact details">
             <h3 class="site-footer__heading">Contact Details</h3>
             <ul class="site-footer__contact-list">
               <li>
@@ -680,7 +709,7 @@
                 <span>Mon – Fri, 8:00 AM – 4:30 PM</span>
               </li>
             </ul>
-          </div>
+          </address>
         </div>
       </div>
     </div>

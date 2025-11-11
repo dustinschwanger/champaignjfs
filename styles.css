@@ -77,15 +77,24 @@
 .site-header__mobile-toggle {
   display: none;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   background: transparent;
   border: none;
-  padding: 0.5rem;
+  padding: 0.75rem;
   cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  align-items: center;
+}
+
+.site-header__mobile-toggle:focus {
+  outline: 3px solid var(--county-gold);
+  outline-offset: 2px;
 }
 
 .site-header__mobile-toggle span {
-  width: 24px;
+  width: 26px;
   height: 3px;
   background-color: var(--county-blue-dark);
   border-radius: 2px;
@@ -828,6 +837,11 @@
   background-color: #e9ecef;
   border-color: var(--county-blue-light);
   transform: translateX(4px);
+}
+
+.quick-access-list .usa-accordion__button:focus {
+  outline: 3px solid var(--county-gold);
+  outline-offset: 2px;
 }
 
 .quick-access-list .usa-accordion__button[aria-expanded="true"] {
@@ -1883,9 +1897,39 @@
 /* Accessibility: Focus States */
 a:focus,
 button:focus,
-.usa-button:focus {
-  outline: 0.25rem solid var(--county-gold);
-  outline-offset: 0.25rem;
+.usa-button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 3px solid var(--county-gold);
+  outline-offset: 2px;
+}
+
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--county-gold);
+  outline-offset: 2px;
+}
+
+/* Ensure all interactive elements meet minimum touch target size of 44x44px */
+button,
+a.usa-button,
+input[type="submit"],
+input[type="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* For text links, ensure adequate padding */
+.site-header__menu > li > a,
+.site-footer a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Mobile Menu Styles */
@@ -2148,6 +2192,25 @@ button:focus,
   .site-footer {
     border-top: 2px solid currentColor;
   }
+}
+
+/* Text Spacing Support (WCAG 1.4.12) */
+/* Allow user agents to override text spacing without breaking layout */
+* {
+  max-width: none;
+}
+
+p,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
 }
 
 /* Reduced Motion Support */

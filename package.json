@@ -1,0 +1,23 @@
+{
+  "name": "champaign-county-djfs",
+  "version": "1.0.0",
+  "description": "Champaign County Department of Job & Family Services Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "champaign",
+    "county",
+    "djfs",
+    "ohio"
+  ],
+  "author": "Champaign County DJFS",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
